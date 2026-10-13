@@ -1,0 +1,7 @@
+.baked/
+*.db
+bin/
+*.exe
+*.test
+*.out
+/centsplit
