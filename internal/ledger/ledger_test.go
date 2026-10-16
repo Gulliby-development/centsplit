@@ -101,7 +101,7 @@ func TestParseFileErrors(t *testing.T) {
 		{name: "sent invalid amount", input: "ana sent bob 1,5", line: 1, msg: "invalid amount \"1,5\""},
 		{name: "sent unexpected word", input: "ana sent bob 5 now", line: 1, msg: "unexpected \"now\""},
 		{name: "error line counts blank lines", input: "ana paid 1 for bob\n\n!x paid 1 for a", line: 3, msg: "invalid name \"!x\""},
-		{name: "inline comment is a word", input: "ana paid 1 for bob # not a comment", line: 1, msg: "invalid name \"#\""},
+		{name: "hash inside a word is part of the name", input: "ana paid 1 for bob#1 ana", line: 1, msg: "invalid name \"bob#1\""},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
