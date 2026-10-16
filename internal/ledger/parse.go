@@ -74,6 +74,12 @@ func ParseFile(display, text string) ([]Record, error) {
 
 func parseRecordLine(line string) (Record, error) {
 	words := splitWords(line)
+	for index, word := range words {
+		if strings.HasPrefix(word, "#") {
+			words = words[:index]
+			break
+		}
+	}
 	record := Record{}
 
 	if !validName(words[0]) {

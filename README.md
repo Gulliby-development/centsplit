@@ -69,7 +69,7 @@ bob pays dave: 7.51
 
 Each nonblank, non-comment line is one record. A paid-expense record has the form `NAME paid AMOUNT for PERSON...`; a repayment or loan record has the form `NAME sent NAME AMOUNT`. Names are case-sensitive and contain 1–20 ASCII letters, digits, underscores, or hyphens. A participant may have a weight from 1 to 99 written as `NAME*WEIGHT`; an omitted weight is 1.
 
-Amounts use 1–9 whole-number digits and may have one or two decimal digits after a period. They must be greater than zero; signs, commas, and other decimal forms are not accepted. Lines may use spaces or tabs between fields. Blank lines and lines whose first non-whitespace character is `#` are ignored. A UTF-8 byte-order mark at the start of a file is accepted, as are LF and CRLF line endings. A file may contain at most 1000 records.
+Amounts use 1–9 whole-number digits and may have one or two decimal digits after a period. They must be greater than zero; signs, commas, and other decimal forms are not accepted. Lines may use spaces or tabs between fields. Blank lines and lines whose first non-whitespace character is `#` are ignored. A `#` that starts a word (after spaces or tabs) also begins a comment that runs to the end of the line, as in `ana paid 30.00 for ana bob # dinner`; a `#` inside a word belongs to the word and is rejected, as in `invalid name "bob#1"`. Comments are part of the file format only: the `split` command takes none. A UTF-8 byte-order mark at the start of a file is accepted, as are LF and CRLF line endings. A file may contain at most 1000 records.
 
 ## How shares and settlements are decided
 
