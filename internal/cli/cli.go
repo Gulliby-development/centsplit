@@ -143,6 +143,9 @@ func runSplit(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return reportError(stderr, err.Error())
 	}
+	if err := ledger.CheckExact(amount, people); err != nil {
+		return reportError(stderr, err.Error())
+	}
 
 	shares := ledger.Shares(amount, people)
 	var output strings.Builder
