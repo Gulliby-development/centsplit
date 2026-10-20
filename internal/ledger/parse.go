@@ -11,6 +11,7 @@ import (
 type Person struct {
 	Name   string
 	Weight int64
+	Exact  int64
 }
 
 // Record is either a paid expense or a direct payment between people.
@@ -114,6 +115,9 @@ func parseRecordLine(line string) (Record, error) {
 		if err != nil {
 			return Record{}, err
 		}
+		if err := CheckExact(record.Cents, people); err != nil {
+			return Record{}, err
+		}
 		record.People = people
 		return record, nil
 	case "sent":
@@ -146,6 +150,17 @@ func parseRecordLine(line string) (Record, error) {
 }
 
 func parsePerson(token string) (Person, error) {
+	if equals := strings.IndexByte(token, '='); equals >= 0 {
+		name := token[:equals]
+		if !validName(name) {
+			return Person{}, invalidName(name)
+		}
+		cents, ok := money.ParseAmount(token[equals+1:])
+		if !ok {
+			return Person{}, invalidAmount(token)
+		}
+		return Person{Name: name, Weight: 1, Exact: cents}, nil
+	}
 	name := token
 	weight := int64(1)
 	if separator := strings.IndexByte(token, '*'); separator >= 0 {
