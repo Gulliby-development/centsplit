@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/Gulliby-development/centsplit/internal/money"
 )
 
-const usage = "usage: centsplit balance FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...\n"
+const usage = "usage: centsplit balance [--only NAME[,NAME...]] FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...\n"
 
 // Run executes a centsplit command using the supplied streams.
 func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
@@ -34,7 +35,7 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 }
 
 func runLedgerCommand(command string, args []string, stdin io.Reader, stdout, stderr io.Writer) int {
-	file, message := ledgerFileArgument(args)
+	file, only, message := ledgerFileArgument(command, args)
 	if message != "" {
 		return reportError(stderr, message)
 	}
@@ -49,9 +50,17 @@ func runLedgerCommand(command string, args []string, stdin io.Reader, stdout, st
 	}
 
 	balances := ledger.Balances(records)
+	for _, name := range only {
+		if _, known := balances[name]; !known {
+			return reportError(stderr, fmt.Sprintf("unknown person %q", name))
+		}
+	}
 	var output strings.Builder
 	if command == "balance" {
 		for _, name := range ledger.SortedNames(balances) {
+			if len(only) > 0 && !slices.Contains(only, name) {
+				continue
+			}
 			output.WriteString(name)
 			output.WriteString(": ")
 			output.WriteString(money.Format(balances[name], true))
@@ -81,21 +90,39 @@ func runLedgerCommand(command string, args []string, stdin io.Reader, stdout, st
 	return 0
 }
 
-func ledgerFileArgument(args []string) (string, string) {
+func ledgerFileArgument(command string, args []string) (string, []string, string) {
 	files := make([]string, 0, len(args))
-	for _, arg := range args {
+	var only []string
+	for index := 0; index < len(args); index++ {
+		arg := args[index]
+		if command == "balance" && (arg == "--only" || strings.HasPrefix(arg, "--only=")) {
+			value := strings.TrimPrefix(arg, "--only=")
+			if arg == "--only" {
+				if index+1 == len(args) {
+					return "", nil, "missing value for --only"
+				}
+				index++
+				value = args[index]
+			}
+			names, err := ledger.ParseNames(value)
+			if err != nil {
+				return "", nil, err.Error()
+			}
+			only = names
+			continue
+		}
 		if strings.HasPrefix(arg, "-") && arg != "-" {
-			return "", fmt.Sprintf("unknown option %q", arg)
+			return "", nil, fmt.Sprintf("unknown option %q", arg)
 		}
 		files = append(files, arg)
 	}
 	if len(files) == 0 {
-		return "", "missing FILE"
+		return "", nil, "missing FILE"
 	}
 	if len(files) > 1 {
-		return "", "too many arguments"
+		return "", nil, "too many arguments"
 	}
-	return files[0], ""
+	return files[0], only, ""
 }
 
 func readLedgerFile(file string, stdin io.Reader) (string, string, string) {

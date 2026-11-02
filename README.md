@@ -29,12 +29,12 @@ go run . --help
 ```
 
 ```text
-usage: centsplit balance FILE
+usage: centsplit balance [--only NAME[,NAME...]] FILE
        centsplit settle FILE
        centsplit split AMOUNT PERSON...
 ```
 
-`balance FILE` lists every person's balance. Positive values are owed to that person; negative values are amounts they owe. `settle FILE` produces transfers that reconcile the balances. `split AMOUNT PERSON...` divides one amount among the listed people without reading a file. Use `-` as FILE to read the expense records from standard input.
+`balance FILE` lists every person's balance. Positive values are owed to that person; negative values are amounts they owe. `balance --only NAME[,NAME...] FILE` lists only the named people (see below). `settle FILE` produces transfers that reconcile the balances. `split AMOUNT PERSON...` divides one amount among the listed people without reading a file. Use `-` as FILE to read the expense records from standard input.
 
 Here is a shared trip ledger named `trip.txt`:
 
@@ -63,6 +63,13 @@ cara pays ana: 24.50
 bob pays ana: 7.74
 bob pays dave: 7.51
 3 transfers
+```
+
+`--only` takes a comma-separated list of names as the next argument or after `=`, may stand anywhere among the arguments and may be repeated; the last one wins. The listed people keep the usual order, ascending byte-order name, whatever order the list has. A name that is invalid, repeated in the list or not in the file is an error (`invalid name "x y"`, `duplicate person "ana"`, `unknown person "zed"`). `settle` and `split` do not take the option. Running `centsplit balance --only ana,dave trip.txt` prints:
+
+```text
+ana: +32.24
+dave: +7.51
 ```
 
 ## File format

@@ -41,6 +41,22 @@ func ParsePeople(tokens []string) ([]Person, error) {
 	return people, nil
 }
 
+// ParseNames parses a comma-separated list of person names, rejecting duplicates.
+func ParseNames(list string) ([]string, error) {
+	names := strings.Split(list, ",")
+	seen := make(map[string]struct{}, len(names))
+	for _, name := range names {
+		if !validName(name) {
+			return nil, invalidName(name)
+		}
+		if _, exists := seen[name]; exists {
+			return nil, fmt.Errorf("duplicate person %q", name)
+		}
+		seen[name] = struct{}{}
+	}
+	return names, nil
+}
+
 // ParseFile parses expense records, preserving source line numbers in errors.
 func ParseFile(display, text string) ([]Record, error) {
 	text = strings.TrimPrefix(text, "\uFEFF")
