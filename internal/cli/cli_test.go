@@ -42,7 +42,7 @@ func TestRunHelp(t *testing.T) {
 	if code != 0 {
 		t.Errorf("Run(--help) exit code = %d, want 0", code)
 	}
-	const want = "usage: centsplit balance FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...\n"
+	const want = "usage: centsplit balance [--only NAME[,NAME...]] FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...\n"
 	if stdout != want {
 		t.Errorf("Run(--help) stdout = %q, want %q", stdout, want)
 	}
@@ -337,7 +337,7 @@ func TestRunDocumentationContainsSpecifiedContent(t *testing.T) {
 	}
 	content := string(readme)
 	required := []string{
-		"usage: centsplit balance FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...",
+		"usage: centsplit balance [--only NAME[,NAME...]] FILE\n       centsplit settle FILE\n       centsplit split AMOUNT PERSON...",
 		`# trip to the lake
 ana paid 90.00 for ana bob cara
 bob paid 30.50 for ana bob
